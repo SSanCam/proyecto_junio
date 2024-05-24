@@ -29,7 +29,18 @@ dependencies {
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
     testImplementation(kotlin("test"))
-
+//DCS: Base de datos H2
+    implementation("com.h2database:h2:2.2.224")
+//DCS: HikariCP
+    implementation("com.zaxxer:HikariCP:5.0.0")
+//DCS: Arregla el warning SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+    implementation("org.slf4j:slf4j-nop:2.0.6")
+// Bibliotecas para manejar JSON
+    implementation("com.fasterxml.jackson.core:jackson-core:2.13.1")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.1")
+// Bibliotecas para manejar XML (JAXB)
+    implementation("javax.xml.bind:jaxb-api:2.3.1")
+    implementation("org.glassfish.jaxb:jaxb-runtime:2.3.3")
 }
 
 tasks.test {
