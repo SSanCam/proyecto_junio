@@ -1,14 +1,14 @@
 
 import dao.CTFDAO
 import dao.GroupDAO
-import db_connection.DataSourceFactory
+import db_connection.DAOFactory
 import services.GroupService
 import utilities.Console
 import java.io.File
 
 fun main(args: Array<String>) {
     val console = Console()
-    val dataSource = DataSourceFactory.getDS(DataSourceFactory.DataSourceType.H2)
+    val dataSource = DAOFactory.getDS(DAOFactory.DataSourceType.H2)
     val groupDAO = GroupDAO(console, dataSource)
     val groupService = GroupService(console, groupDAO)
     val ctfDAO = CTFDAO(console, dataSource)

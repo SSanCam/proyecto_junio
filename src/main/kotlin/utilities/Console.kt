@@ -2,7 +2,12 @@ package utilities
 
 import interfaces.IOutputInfo
 
+/**
+ * Console manejará los datos de entrada/salida.
+ */
+
 class Console : IOutputInfo {
+
     override fun showInfo(output: Any, lineBreak: Boolean) {
         if (lineBreak) {
             println(output)
@@ -23,4 +28,5 @@ class Console : IOutputInfo {
     override fun showConfirmation(message: String) {
         showInfo(message)
     }
+
 }

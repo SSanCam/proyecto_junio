@@ -1,7 +1,7 @@
 package services
 
 import dao.ICTFDAO
-import db_connection.DataSourceFactory
+import db_connection.DAOFactory
 import entitiesDAO.CTFEntity
 import utilities.Console
 import java.sql.SQLException
@@ -37,7 +37,7 @@ class CTFService(private val console: Console, private val CTFDAO: ICTFDAO) : IC
 
     // Actualizamos un CTF
     override fun updateCTF(ctfId: Int, groupId: Int, newScore: Int) {
-        val dataSource = DataSourceFactory.getDS(DataSourceFactory.DataSourceType.H2)
+        val dataSource = DAOFactory.getDS(DAOFactory.DataSourceType.H2)
         dataSource.connection.use { conn ->
             try {
                 conn.autoCommit = false
@@ -67,7 +67,6 @@ class CTFService(private val console: Console, private val CTFDAO: ICTFDAO) : IC
             console.showError("Error al eliminar la participación de CTF: ${e.message}")
         }
     }
-
 
     override fun getAllCTFs(): List<CTFEntity> {
         return try {
