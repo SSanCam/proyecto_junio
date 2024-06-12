@@ -1,77 +1,44 @@
+package main
 
-import dao.CTFDAO
-import dao.GroupDAO
 import db_connection.DAOFactory
+import db_connection.DataSourceType
+import org.h2.jdbcx.JdbcDataSource
+import services.CTFService
 import services.GroupService
 import utilities.Console
-import java.io.File
+import utilities.ProcessCommandManager
 
 fun main(args: Array<String>) {
     val console = Console()
-    val dataSource = DAOFactory.getDS(DAOFactory.DataSourceType.H2)
-    val groupDAO = GroupDAO(console, dataSource)
+
+    // Configura la conexión a la base de datos H2
+    val dataSource = JdbcDataSource().apply {
+        setURL("jdbc:h2:~/test")
+        user = "sa"
+        password = ""
+    }
+
+    // Configura los DAOs
+    val daoFactory = DAOFactory.getFactory(DataSourceType.H2, dataSource, console)
+
+    val groupDAO = daoFactory.getGroupDAO()
+    val ctfDAO = daoFactory.getCTFDAO()
+
+    // Configura los servicios
     val groupService = GroupService(console, groupDAO)
-    val ctfDAO = CTFDAO(console, dataSource)
+    val ctfService = CTFService(console, ctfDAO)
 
-    if (args.isEmpty()) {
-        console.showInfo("No commands provided. Exiting...")
-        return
-    }
+    // Configura el ProcessCommandManager
+    val processCommandManager = ProcessCommandManager(console)
 
-    if (args[0] == "-f" && args.size == 2) {
-        processCommandFile(args[1], groupService, ctfDAO)
+    if (args.isNotEmpty() && args[0] == "-f") {
+        if (args.size == 2) {
+            val filename = args[1]
+            processCommandManager.prosCommFile(filename, groupService, ctfService)
+        } else {
+            console.showError("ERROR: El número de parámetros no es adecuado.")
+        }
     } else {
-        processCommand(args, groupService, ctfDAO)
+        console.showError("ERROR: Comando no reconocido o falta de parámetros.")
     }
 }
-
-fun processCommandFile(filename: String, groupService: GroupService, ctfDAO: CTFDAO) {
-    File(filename).useLines { lines ->
-        lines.filter { it.isNotBlank() && !it.startsWith("#") }
-            .forEach { line ->
-                val parts = line.split(";")
-                processCommand(parts.toTypedArray(), groupService, ctfDAO)
-            }
-    }
-}
-
-fun processCommand(args: Array<String>, groupService: GroupService, ctfdao: CTFDAO) {
-    val console = Console()
-    when (args[0]) {
-        "-g" -> {
-            // Agrega nuevo registro a GRUPOS
-            if (args.size != 3) {
-                console.showError("ERROR: El parámetro <grupoid> debe ser un valor numérico de tipo entero.")
-            } else {
-                groupService.createGroup(args[2])
-            }
-        }
-
-        "-p" -> {
-            // Agrega un nuevo registro a CTFS
-        }
-
-        "-t" -> {
-            // Elimina un registro de GRUPOS
-        }
-
-        "-e" -> {
-            // Elimina un registro de CTFS
-        }
-
-        "-l" -> {
-            // Muestra un registro de GRUPOS
-        }
-        "-c" -> {
-            // Muestra todos los registros de CTFS
-        }
-        "-f" -> {
-            // Fichero con conjunto de comandos para procesamiento por lotes
-        }
-        "-i" -> {
-            // Lanza la interfaz gráfica
-        }
-        else -> println("Unknown command: ${args[0]}")
-    }
-}
-

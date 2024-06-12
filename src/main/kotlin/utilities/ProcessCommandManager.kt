@@ -19,9 +19,9 @@ class ProcessCommandManager(private val console: Console) {
      * @param groupService Servicio para manejar operaciones relacionadas con grupos.
      * @param ctfService Servicio para manejar operaciones relacionadas con CTFs.
      */
-    private fun prosCommFile(filename: String, groupService: GroupService, ctfService: CTFService) {
+    fun prosCommFile(filename: String, groupService: GroupService, ctfService: CTFService) {
 
-        val batchFile = File("\\resources\\ficheroPorLote.batch")
+        val batchFile = File("\\resources\\batchFile.txt")
         if (!batchFile.exists()){
             batchFile.createNewFile()
         }
@@ -140,16 +140,15 @@ class ProcessCommandManager(private val console: Console) {
                 if (args.size != 2) {
                     console.showError("Número de parámetros erróneo.")
                 } else {
-                    val filename = args[1]
-                    prosCommFile(filename, groupService, ctfService)
+                    val batchFile = File(args[1])
+                    prosCommFile(args[1], groupService, ctfService)
                 }
             }
 
             // Lanza la interfaz gráfica
             "-i" -> {
-
+                TODO("INTERFAZ_GRAFICA")
             }
-
             else -> console.showError("Unknown command: ${args[0]}")
         }
     }

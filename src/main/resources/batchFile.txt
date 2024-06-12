@@ -1,0 +1,23 @@
+# Crear grupos
+-g;1DAM-G1
+-g;1DAM-G2
+
+# Añadir/Actualizar participaciones
+-p;1;1;100
+-p;1;2;90
+-p;2;1;80
+
+# Listar información de un grupo específico
+-l;1
+
+# Listar información de todos los grupos
+-l
+
+# Listar participaciones en un CTF específico
+-c;1
+
+# Eliminar participación
+-e;1;1
+
+# Eliminar grupo
+-t;1
