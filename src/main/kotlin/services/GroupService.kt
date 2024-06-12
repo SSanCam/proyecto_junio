@@ -59,4 +59,20 @@ class GroupService(private val console: Console, private val groupDAO: IGroupDAO
             return emptyList()
         }
     }
+
+    /**
+     * Actualiza el mejor CTF de un grupo.
+     *
+     * @param groupId ID del grupo para actualizar su mejor CTF.
+     */
+    fun updateBestCTF(groupId: Int) {
+        try {
+            val group = getGroupByID(groupId) ?: return
+            val bestCTF = groupDAO.getBestCTF(groupId)
+            groupDAO.updateGroup(group.copy(bestpostctfid = bestCTF?.ctfId))
+            console.showInfo("Actualización de mejor CTF completada.")
+        } catch (e: SQLException) {
+            console.showError("Error al actualizar el mejor CTF: ${e.message}")
+        }
+    }
 }

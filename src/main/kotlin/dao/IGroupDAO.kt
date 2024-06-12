@@ -1,5 +1,6 @@
 package dao
 
+import entitiesDAO.CTFEntity
 import entitiesDAO.GroupEntity
 
 interface IGroupDAO {
@@ -8,4 +9,5 @@ interface IGroupDAO {
     fun deleteGroup(groupid: Int)
     fun getGroup(id: Int): GroupEntity?
     fun getAllGroups(): List<GroupEntity>
+    fun getBestCTF(groupId: Int): CTFEntity?
 }

@@ -1,5 +1,6 @@
 package dao
 
+import entitiesDAO.CTFEntity
 import entitiesDAO.GroupEntity
 import utilities.Console
 import utilities.TransactionManager
@@ -12,13 +13,13 @@ import javax.sql.DataSource
  *
  * @property console Instancia de Console para mostrar mensajes de error.
  * @property dataSource Fuente de datos para las conexiones a la base de datos.
- * @property transactionManager: TransactionManager
+ * @property transaction: TransactionManager
  */
 
 class GroupDAO(
     private val console: Console,
     private val dataSource: DataSource,
-    private val transactionManager: TransactionManager
+    private val transaction: TransactionManager
 ) : IGroupDAO {
 
     /**
@@ -27,22 +28,23 @@ class GroupDAO(
      * @throws SQLException Si ocurre un error al crear el grupo.
      */
     override fun createGroup(grupodesc: String) {
+        val sql = "INSERT INTO GRUPOS (grupodesc) VALUES (?);"
         try {
-            transactionManager.openConnection()
-            transactionManager.commit()
-            val conn = transactionManager.getConnection()
-            val sql = "INSERT INTO GRUPOS (grupodesc) VALUES (?);"
+            transaction.openConnection()
+            transaction.commit()
+            val conn = transaction.getConnection()
             conn.prepareStatement(sql).use { stmt ->
                 stmt.setString(1, grupodesc)
                 stmt.executeUpdate()
             }
-            transactionManager.commit()
+            transaction.commit()
+            console.showInfo("Grupo creado correctamente.")
         } catch (e: SQLException) {
-            transactionManager.rollback()
+            transaction.rollback()
             console.showError("Error al crear grupo nuevo: ${e.message}")
             throw e
         } finally {
-            transactionManager.closeConnection()
+            transaction.closeConnection()
         }
     }
 
@@ -52,27 +54,28 @@ class GroupDAO(
      * @throws SQLException Si ocurre un error al actualizar el grupo.
      */
     override fun updateGroup(group: GroupEntity) {
-        try {
-            transactionManager.openConnection()
-            val sql = """
+        val sql = """
                 |UPDATE GRUPOS
                 |SET grupodesc =?, mejorposCTFid =?
                 |WHERE grupoid =?;
             """.trimMargin()
-            val conn = transactionManager.getConnection()
+        try {
+            transaction.openConnection()
+            val conn = transaction.getConnection()
             conn.prepareStatement(sql).use { stmt ->
-                stmt.setString(1, group.grupodesc)
-                stmt.setInt(2, group.mejorposCTFid ?: 0)
+                stmt.setString(1, group.groupdesc)
+                stmt.setInt(2, group.bestpostctfid ?: 0)
                 stmt.setInt(3, group.groupid)
                 stmt.executeUpdate()
-                transactionManager.commit()
             }
+            transaction.commit()
+            console.showInfo("Grupo actualizado correctamente.")
         } catch (e: SQLException) {
-            transactionManager.rollback()
+            transaction.rollback()
             console.showError("Error al actualizar los datos: ${e.message}")
             throw e
         } finally {
-            transactionManager.closeConnection()
+            transaction.closeConnection()
         }
     }
 
@@ -82,24 +85,25 @@ class GroupDAO(
      * @throws SQLException Si ocurre un error al eliminar el grupo.
      */
     override fun deleteGroup(groupid: Int) {
-        try {
-            transactionManager.openConnection()
-            val sql = """
+        val sql = """
                 |DELETE FROM GRUPOS 
                 |WHERE grupoid =? ;
                 """.trimIndent()
-            val conn = transactionManager.getConnection()
+        try {
+            transaction.openConnection()
+            val conn = transaction.getConnection()
             conn.prepareStatement(sql).use { stmt ->
                 stmt.setInt(1, groupid)
                 stmt.executeUpdate()
             }
-            transactionManager.commit()
+            transaction.commit()
+            console.showInfo("Grupo eliminado correctamente.")
         } catch (e: SQLException) {
-            transactionManager.rollback()
+            transaction.rollback()
             console.showError("Error al eliminar el grupo: ${e.message}")
             throw e
         } finally {
-            transactionManager.closeConnection()
+            transaction.closeConnection()
         }
     }
 
@@ -109,12 +113,13 @@ class GroupDAO(
      * @return La entidad del grupo o null si no se encuentra.
      */
     override fun getGroup(id: Int): GroupEntity? {
-        try {
-            val sql = """
+        val sql = """
             |SELECT * 
             |FROM GRUPOS
             |WHERE grupoid = ?;
         """.trimMargin()
+        try {
+            transaction.openConnection()
             dataSource.connection.use { conn ->
                 conn.prepareStatement(sql).use { stmt ->
                     stmt.setInt(1, id)
@@ -122,18 +127,17 @@ class GroupDAO(
                     if (resultSet.next()) {
                         return GroupEntity(
                             groupid = resultSet.getInt("groupid"),
-                            grupodesc = resultSet.getString("grupodesc"),
-                            mejorposCTFid = resultSet.getInt("mejorposCTFid").takeIf { it != 0 }  // Handle null if 0
+                            groupdesc = resultSet.getString("grupodesc"),
+                            bestpostctfid = resultSet.getInt("mejorposCTFid").takeIf { it != 0 }  // Handle null if 0
                         )
                     }
                 }
             }
         } catch (e: SQLException) {
-            transactionManager.rollback()
             console.showError("Error al obtener el grupo: ${e.message}")
             throw e
         } finally {
-            transactionManager.closeConnection()
+            transaction.closeConnection()
         }
         return null
     }
@@ -145,32 +149,69 @@ class GroupDAO(
      */
     override fun getAllGroups(): List<GroupEntity> {
         val grupos = mutableListOf<GroupEntity>()
-        try {
-            val sql = """
+        val sql = """
             SELECT * 
             FROM GRUPOS;
             """.trimIndent()
-
-            transactionManager.openConnection()
-            val conn = transactionManager.getConnection()
+        try {
+            transaction.openConnection()
+            val conn = transaction.getConnection()
             conn.prepareStatement(sql).use { stmt ->
                 val result = stmt.executeQuery()
                 while (result.next()) {
                     val group = GroupEntity(
                         groupid = result.getInt("grupoid"),
-                        grupodesc = result.getString("grupodesc"),
-                        mejorposCTFid = result.getInt("mejorposCTFid") as? Int
+                        groupdesc = result.getString("grupodesc"),
+                        bestpostctfid = result.getInt("mejorposCTFid") as? Int
                     )
                     grupos.add(group)
                 }
             }
         } catch (e: SQLException) {
-            transactionManager.rollback()
+            transaction.rollback()
             console.showError("Error al recibir los datos: ${e.message}")
             throw e
         } finally {
-            transactionManager.closeConnection()
+            transaction.closeConnection()
         }
         return grupos
+    }
+
+    /**
+     * Obtiene la información del grupo que tiene mejor puntuación en su CTF
+     * @param groupId Int Número identificativo del grupo
+     * @return El grupo con mayor puntuación en su CTF
+     * @throws SQLException Si ocurre un error al recibir la información.
+     */
+    override fun getBestCTF(groupId: Int): CTFEntity? {
+        val sql = """
+        SELECT CTFid, grupoid, MAX(puntuacion) as puntuacion
+        FROM CTFS
+        WHERE grupoid = ?
+        GROUP BY CTFid, grupoid
+        ORDER BY puntuacion DESC
+        LIMIT 1;
+    """.trimIndent()
+        try {
+            transaction.openConnection()
+            val conn = transaction.getConnection()
+            conn.prepareStatement(sql).use { stmt ->
+                stmt.setInt(1, groupId)
+                val resultSet = stmt.executeQuery()
+                if (resultSet.next()) {
+                    return CTFEntity(
+                        ctfId = resultSet.getInt("CTFid"),
+                        groupid = resultSet.getInt("grupoid"),
+                        score = resultSet.getInt("puntuacion")
+                    )
+                }
+            }
+        } catch (e: SQLException) {
+            console.showError("Error al obtener el mejor CTF: ${e.message}")
+            throw e
+        } finally {
+            transaction.closeConnection()
+        }
+        return null
     }
 }

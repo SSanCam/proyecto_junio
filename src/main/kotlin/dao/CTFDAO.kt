@@ -2,6 +2,7 @@ package dao
 
 import entitiesDAO.CTFEntity
 import utilities.Console
+import utilities.TransactionManager
 import java.sql.SQLException
 import javax.sql.DataSource
 
@@ -11,25 +12,36 @@ import javax.sql.DataSource
  *
  * @property console Instancia de Console para mostrar mensajes de error.
  * @property dataSource Fuente de datos JDBC para la conexión a la base de datos.
+ * @property transaction Instancia de TransactionManager para manejar transacciones.
  */
-class CTFDAO(private val console: Console, private val dataSource: DataSource) : ICTFDAO {
+
+class CTFDAO(
+    private val console: Console,
+    private val dataSource: DataSource,
+    private val transaction: TransactionManager
+) : ICTFDAO {
 
     // Agrega un nuevo CTF a la base de datos
-    override fun addCTF(ctf: CTFEntity) {
-        val sql = """INSERT INTO CTFS (CTFif, grupoid, puntuacion) 
-            |VALUES (?, ?, ?);""".trimMargin()
+    override fun createCTF(ctf: CTFEntity) {
+        val sql = """INSERT INTO CTFS (grupoid, puntuacion) 
+            |VALUES (?, ?);""".trimMargin()
         try {
+            transaction.openConnection()
             dataSource.connection.use { conn ->
                 conn.prepareStatement(sql).use { stmt ->
-                    stmt.setInt(1, ctf.CTFid)
-                    stmt.setInt(2, ctf.groupid)
-                    stmt.setInt(3, ctf.puntuacion)
+                    stmt.setInt(1, ctf.groupid)
+                    stmt.setInt(2, ctf.score)
                     stmt.executeUpdate()
                 }
+                transaction.commit()
+                console.showInfo("CTF agregado correctamente.")
             }
         } catch (e: SQLException) {
+            transaction.rollback()
             console.showError("Error al agregar CTF: ${e.message}")
             throw e
+        } finally {
+            transaction.closeConnection()
         }
     }
 
@@ -37,26 +49,28 @@ class CTFDAO(private val console: Console, private val dataSource: DataSource) :
     override fun getCTFById(id: Int): CTFEntity? {
         val sql = """
             |SELECT * 
-            |FROM CTF
-            |WHERE CTFid =? ;
+            |FROM CTFS
+            |WHERE CTFid = ? ;
         """.trimMargin()
         try {
-            dataSource.connection.use { conn ->
-                conn.prepareStatement(sql).use { stmt ->
-                    stmt.setInt(1, id)
-                    val result = stmt.executeQuery()
-                    if (result.next()) {
-                        return CTFEntity(
-                            CTFid = result.getInt("CTFid"),
-                            groupid = result.getInt("grupoid"),
-                            puntuacion = result.getInt("puntuacion")
-                        )
-                    }
+            transaction.openConnection()
+            val conn = transaction.getConnection()
+            conn.prepareStatement(sql).use { stmt ->
+                stmt.setInt(1, id)
+                val result = stmt.executeQuery()
+                if (result.next()) {
+                    return CTFEntity(
+                        ctfId = result.getInt("CTFid"),
+                        groupid = result.getInt("grupoid"),
+                        score = result.getInt("puntuacion")
+                    )
                 }
             }
         } catch (e: SQLException) {
             console.showError("Error en la recuperación de los datos: ${e.message}")
             throw e
+        } finally {
+            transaction.closeConnection()
         }
         return null
     }
@@ -69,17 +83,22 @@ class CTFDAO(private val console: Console, private val dataSource: DataSource) :
             |WHERE CTFid = ?;
         """.trimIndent()
         try {
-            dataSource.connection.use { conn ->
-                conn.prepareStatement(sql).use { stmt ->
-                    stmt.setInt(1, groupId)
-                    stmt.setInt(2, newScore)
-                    stmt.setInt(3, ctfId)
-                    stmt.executeUpdate()
-                }
+            transaction.openConnection()
+            val conn = transaction.getConnection()
+            conn.prepareStatement(sql).use { stmt ->
+                stmt.setInt(1, newScore)
+                stmt.setInt(2, ctfId)
+                stmt.setInt(3, groupId)
+                stmt.executeUpdate()
             }
+            transaction.commit()
+            console.showInfo("CTF actualizado correctamente.")
         } catch (e: SQLException) {
+            transaction.rollback()
             console.showError("Error al actualizar el CTF: ${e.message}")
             throw e
+        } finally {
+            transaction.closeConnection()
         }
     }
 
@@ -90,15 +109,19 @@ class CTFDAO(private val console: Console, private val dataSource: DataSource) :
              |WHERE CTFid =? ;
              """.trimIndent()
         try {
-            dataSource.connection.use { conn ->
-                conn.prepareStatement(sql).use { stmt ->
-                    stmt.setInt(1, id)
-                    stmt.executeUpdate()
-                }
+            transaction.openConnection()
+            val conn = transaction.getConnection()
+            conn.prepareStatement(sql).use { stmt ->
+                stmt.setInt(1, id)
+                stmt.executeUpdate()
             }
+            transaction.commit()
+            console.showInfo("CTF eliminado correctamente.")
         } catch (e: SQLException) {
             console.showError("Error al eliminar el CTF: ${e.message}")
             throw e
+        } finally {
+            transaction.closeConnection()
         }
     }
 
@@ -110,25 +133,26 @@ class CTFDAO(private val console: Console, private val dataSource: DataSource) :
             |FROM CTFS;
         """.trimIndent()
         try {
-            dataSource.connection.use { conn ->
-                conn.prepareStatement(sql).use { stmt ->
-                    val result = stmt.executeQuery()
-                    while (result.next()) {
-                        ctfs.add(
-                            CTFEntity(
-                                CTFid = result.getInt("CTFid"),
-                                groupid = result.getInt("grupoid"),
-                                puntuacion = result.getInt("puntuacion")
-                            )
-                         )
-                    }
+            transaction.openConnection()
+            val conn = transaction.getConnection()
+            conn.prepareStatement(sql).use { stmt ->
+                val result = stmt.executeQuery()
+                while (result.next()) {
+                    ctfs.add(
+                        CTFEntity(
+                            ctfId = result.getInt("CTFid"),
+                            groupid = result.getInt("grupoid"),
+                            score = result.getInt("puntuacion")
+                        )
+                    )
                 }
             }
         } catch (e: SQLException) {
             console.showError("Error al recibir los datos: ${e.message}")
             throw e
+        } finally {
+            transaction.closeConnection()
         }
         return ctfs
     }
-
 }

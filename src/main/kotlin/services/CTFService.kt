@@ -1,80 +1,86 @@
 package services
 
 import dao.ICTFDAO
-import db_connection.DAOFactory
 import entitiesDAO.CTFEntity
 import utilities.Console
 import java.sql.SQLException
 
-class CTFService(private val console: Console, private val CTFDAO: ICTFDAO) : ICTFService {
-
-    // Agrega un nuevo registro de CTF en la base de datos
-    override fun addCTF(ctf: CTFEntity) {
+class CTFService(private val console: Console, private val ctfDAO: ICTFDAO) : ICTFService {
+    /**
+     * Crea un nuevo registro en CTFS
+     * @param groupId Int Indica el númeor de identificación del grupo asociado al nuevo CTF
+     * @param newScore Int Indica la puntuación del CTF
+     * @throws SQLException En caso de no poder crear un nuevo registro
+     */
+    override fun createCTF(groupId: Int, newScore: Int) {
         try {
-            val existingCTF = CTFDAO.getCTFById(ctf.CTFid)
-            if (existingCTF == null) {
-                CTFDAO.addCTF(ctf)
-                console.showInfo("Nueva CTF agregado correctamente.")
-            } else {
-                console.showError("El CTF ya existe.")
-            }
-        } catch (e: Exception) {
-            console.showError("Error al agregar el CTF: ${e.message}")
+            ctfDAO.createCTF(CTFEntity(groupid = groupId, score = newScore))
+            console.showInfo("Nuevo CTF creado correctamente.")
+        } catch (e: SQLException) {
+            console.showError("Error al crear el CTF: ${e.message}")
+            throw e
         }
     }
 
-    // Obtenemos el registro de un CTF por su ID
-    override fun getCTFById(id: Int): CTFEntity? {
-        return try {
-            CTFDAO.getCTFById(id)?.also {
-                console.showInfo("CTF obtenido correctamente.")
-            }
-        } catch (e: Exception) {
-            console.showError("Error al obtener el CTF: ${e.message}")
-            null
-        }
-    }
-
-    // Actualizamos un CTF
+    /**
+     * Actualiza un registro de CTFS
+     * @param ctfId Int Número identificativo del CTF
+     * @param newScore Int Puntuación del CTF
+     * @throws SQLException Error en caso de no poder actualizar la información
+     */
     override fun updateCTF(ctfId: Int, groupId: Int, newScore: Int) {
-        val dataSource = DAOFactory.getDS(DAOFactory.DataSourceType.H2)
-        dataSource.connection.use { conn ->
-            try {
-                conn.autoCommit = false
-                val insertSql = """
-                    |INSERT INTO CTFS (grupoid, puntuacion)
-                    |VALUES (?, ?);
-                """.trimIndent()
-                conn.prepareStatement(insertSql).use { stmt ->
-                    stmt.setInt(1, groupId)
-                    stmt.setObject(2, newScore, java.sql.Types.INTEGER)
-                    stmt.executeUpdate()
-                }
-                console.showInfo("Participación de CTF creada o actualizada correctamente.")
-            } catch (e: SQLException) {
-                conn.rollback()
-                console.showError("Error al actualizar la participación en CTF: ${e.message}")
-            }
-        }
-    }
-
-    // Elimina un registro de la tabla CTF
-    override fun deleteCTFById(id: Int) {
         try {
-            CTFDAO.deleteCTFById(id)
-            console.showInfo("Participación de CTF eliminada correctamente.")
-        } catch (e: Exception) {
-            console.showError("Error al eliminar la participación de CTF: ${e.message}")
+            ctfDAO.updateCTF(ctfId, groupId, newScore)
+            console.showInfo("Actualización de CTF realizada correctamente.")
+        } catch (e: SQLException) {
+            console.showError("Error al actualizar el CTF: ${e.message}")
+            throw e
         }
     }
 
+    /**
+     * Elimina un registro de CTFS
+     * @param ctfId Int El número identificativo del CTF a eliminar.
+     * @throws SQLException Mensaje de error en caso de no poder llevarse a cabo la eliminación.
+     */
+    override fun deleteCTFById(ctfId: Int) {
+        try {
+            ctfDAO.deleteCTFById(ctfId)
+            console.showInfo("CTF eliminado correctamente.")
+        } catch (e: SQLException) {
+            console.showError("Error al eliminar la participación: ${e.message}")
+        }
+    }
+
+    /**
+     * Obtenemos la información de un CTF
+     * @param ctfId Int Número identificativo del CTF del que queremos obtener la información
+     * @return Información del CTF que se busca.
+     * @throws SQLException Mensaje de error al obtener la información
+     */
+    override fun getCTFById(ctfId: Int): CTFEntity? {
+        return try {
+            ctfDAO.getCTFById(ctfId).also {
+                console.showInfo("Datos CTF obtenido correctamente.")
+            }
+        } catch (e: SQLException) {
+            console.showError("Error al recibir los datos CTFS: ${e.message}")
+            throw e
+        }
+    }
+
+    /**
+     * Obtenemos una lista con todos los CTF registrados.
+     * @return Lista con todos los CTF registrados
+     * @throws SQLException Mensaje de error al recibir los datos
+     */
     override fun getAllCTFs(): List<CTFEntity> {
         return try {
-            CTFDAO.getAllCTFs().also {
-                console.showInfo("Lista de todas las participaciones de CTF obtenida correctamente.")
+            ctfDAO.getAllCTFs().also {
+                console.showInfo("Lista de todas las participaciones obtenida correctamente.")
             }
-        } catch (e: Exception) {
-            console.showError("Error al listar las participaciones de CTF: ${e.message}")
+        } catch (e: SQLException) {
+            console.showError("Error al listar las participaciones: ${e.message}")
             emptyList()
         }
     }
