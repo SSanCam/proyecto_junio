@@ -10,9 +10,7 @@ import java.sql.SQLException
  *
  * @property console Instancia de Console para mostrar mensajes.
  */
-
 class ProcessCommandManager(private val console: Console) {
-
     /**
      * Procesa un archivo de comandos.
      *
@@ -23,8 +21,9 @@ class ProcessCommandManager(private val console: Console) {
     fun prosCommFile(filename: String, groupService: GroupService, ctfService: CTFService) {
 
         val batchFile = File("\\resources\\batchFile.txt")
-        if (!batchFile.exists()){
-            batchFile.createNewFile()
+        if (!batchFile.exists()) {
+            console.showError("No se encuentra el archivo de comandos.")
+            return
         }
 
         batchFile.useLines { lines ->
@@ -35,7 +34,6 @@ class ProcessCommandManager(private val console: Console) {
                 }
         }
     }
-
     /**
      * Procesa un comando individual.
      *
@@ -65,7 +63,7 @@ class ProcessCommandManager(private val console: Console) {
                 } else {
                     try {
                         val groupId = args[1].toInt()
-                        val puntuacion = args[3].toInt()
+                        val puntuacion = args[2].toInt()
                         ctfService.createCTF(groupId, puntuacion)
                         groupService.updateBestCTF(groupId)
                         console.showInfo("Nuevo registro en CTF creado correctamente.")
@@ -74,7 +72,6 @@ class ProcessCommandManager(private val console: Console) {
                     }
                 }
             }
-
             // Elimina un registro de GRUPOS
             "-t" -> {
                 if (args.size != 2) {
@@ -89,7 +86,6 @@ class ProcessCommandManager(private val console: Console) {
                     }
                 }
             }
-
             // Elimina un registro de CTFS
             "-e" -> {
                 if (args.size != 3) {
@@ -104,7 +100,6 @@ class ProcessCommandManager(private val console: Console) {
                     }
                 }
             }
-
             // Muestra un registro de GRUPOS
             "-l" -> {
                 if (args.size != 2) {
@@ -121,7 +116,6 @@ class ProcessCommandManager(private val console: Console) {
                     }
                 }
             }
-
             // Muestra todos los registros de CTFS
             "-c" -> {
                 if (args.size != 2) {
@@ -135,7 +129,6 @@ class ProcessCommandManager(private val console: Console) {
                     }
                 }
             }
-
             // Fichero con conjunto de comandos para procesamiento por lotes
             "-f" -> {
                 if (args.size != 2) {
@@ -145,10 +138,9 @@ class ProcessCommandManager(private val console: Console) {
                     prosCommFile(args[1], groupService, ctfService)
                 }
             }
-
             // Lanza la interfaz gráfica
             "-i" -> {
-                TODO("INTERFAZ_GRAFICA")
+                launchGUI(groupService, ctfService)
             }
             else -> console.showError("Unknown command: ${args[0]}")
         }
