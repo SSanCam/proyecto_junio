@@ -61,6 +61,7 @@ class GroupDAO(
             """.trimMargin()
         try {
             transaction.openConnection()
+            transaction.commit()
             val conn = transaction.getConnection()
             conn.prepareStatement(sql).use { stmt ->
                 stmt.setString(1, group.groupdesc)
@@ -91,6 +92,7 @@ class GroupDAO(
                 """.trimIndent()
         try {
             transaction.openConnection()
+            transaction.commit()
             val conn = transaction.getConnection()
             conn.prepareStatement(sql).use { stmt ->
                 stmt.setInt(1, groupid)

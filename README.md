@@ -245,3 +245,11 @@ Repositorio y ejecutable.
 ## 4. Bibliografía
 
 Mas documentación en la tarea.
+
+Para la realización de ésta tarea se han consultado las siguientes páginas web:
+
+
+- [Web Mock K] (https://mockk.io)
+
+- [Web Mokito] (https://site.mockito.org)
+- [Web LogRocket] (https://blog.logrocket.com/unit-testing-kotlin-projects-with-mockk-vs-mockito/)

@@ -27,6 +27,7 @@ class CTFDAO(
             |VALUES (?, ?);""".trimMargin()
         try {
             transaction.openConnection()
+            transaction.commit()
             dataSource.connection.use { conn ->
                 conn.prepareStatement(sql).use { stmt ->
                     stmt.setInt(1, ctf.groupid)
@@ -84,6 +85,7 @@ class CTFDAO(
         """.trimIndent()
         try {
             transaction.openConnection()
+            transaction.commit()
             val conn = transaction.getConnection()
             conn.prepareStatement(sql).use { stmt ->
                 stmt.setInt(1, newScore)
@@ -110,6 +112,7 @@ class CTFDAO(
              """.trimIndent()
         try {
             transaction.openConnection()
+            transaction.commit()
             val conn = transaction.getConnection()
             conn.prepareStatement(sql).use { stmt ->
                 stmt.setInt(1, id)

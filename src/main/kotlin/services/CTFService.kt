@@ -5,6 +5,13 @@ import entitiesDAO.CTFEntity
 import utilities.Console
 import java.sql.SQLException
 
+/**
+ * Servicio para la gestión de CTFs que encapsula la lógica de negocio y utiliza ICTFDAO para interactuar con la base de datos.
+ *
+ * @property console Consola para mostrar información y errores.
+ * @property ctfDAO DAO para las operaciones de base de datos relacionadas con los CTFs.
+ */
+
 class CTFService(private val console: Console, private val ctfDAO: ICTFDAO) : ICTFService {
     /**
      * Crea un nuevo registro en CTFS
@@ -23,10 +30,11 @@ class CTFService(private val console: Console, private val ctfDAO: ICTFDAO) : IC
     }
 
     /**
-     * Actualiza un registro de CTFS
-     * @param ctfId Int Número identificativo del CTF
-     * @param newScore Int Puntuación del CTF
-     * @throws SQLException Error en caso de no poder actualizar la información
+     * Actualiza un registro de CTFS.
+     * @param ctfId Int Número identificativo del CTF.
+     * @param groupId Int Número identificativo del grupo.
+     * @param newScore Int Puntuación del CTF.
+     * @throws SQLException Error en caso de no poder actualizar la información.
      */
     override fun updateCTF(ctfId: Int, groupId: Int, newScore: Int) {
         try {
@@ -39,7 +47,7 @@ class CTFService(private val console: Console, private val ctfDAO: ICTFDAO) : IC
     }
 
     /**
-     * Elimina un registro de CTFS
+     * Elimina un registro de CTFS.
      * @param ctfId Int El número identificativo del CTF a eliminar.
      * @throws SQLException Mensaje de error en caso de no poder llevarse a cabo la eliminación.
      */
@@ -53,10 +61,10 @@ class CTFService(private val console: Console, private val ctfDAO: ICTFDAO) : IC
     }
 
     /**
-     * Obtenemos la información de un CTF
-     * @param ctfId Int Número identificativo del CTF del que queremos obtener la información
+     * Obtenemos la información de un CTF.
+     * @param ctfId Int Número identificativo del CTF del que queremos obtener la información.
      * @return Información del CTF que se busca.
-     * @throws SQLException Mensaje de error al obtener la información
+     * @throws SQLException Mensaje de error al obtener la información.
      */
     override fun getCTFById(ctfId: Int): CTFEntity? {
         return try {
@@ -71,8 +79,8 @@ class CTFService(private val console: Console, private val ctfDAO: ICTFDAO) : IC
 
     /**
      * Obtenemos una lista con todos los CTF registrados.
-     * @return Lista con todos los CTF registrados
-     * @throws SQLException Mensaje de error al recibir los datos
+     * @return Lista con todos los CTF registrados.
+     * @throws SQLException Mensaje de error al recibir los datos.
      */
     override fun getAllCTFs(): List<CTFEntity> {
         return try {

@@ -13,6 +13,12 @@ import java.sql.SQLException
  */
 
 class GroupService(private val console: Console, private val groupDAO: IGroupDAO) : IGroupService {
+
+    /**
+     * Crea un nuevo grupo en la base de datos.
+     * @param groupdesc Descripción del grupo.
+     * @throws SQLException Si ocurre un error al crear el grupo.
+     */
     override fun createGroup(groupdesc: String) {
         try {
             groupDAO.createGroup(groupdesc)
@@ -22,6 +28,11 @@ class GroupService(private val console: Console, private val groupDAO: IGroupDAO
         }
     }
 
+    /**
+     * Actualiza la información de un grupo en la base de datos.
+     * @param group Entidad del grupo con los datos actualizados.
+     * @throws SQLException Si ocurre un error al actualizar el grupo.
+     */
     override fun updateGroup(group: GroupEntity) {
         try {
             groupDAO.updateGroup(group)
@@ -31,6 +42,11 @@ class GroupService(private val console: Console, private val groupDAO: IGroupDAO
         }
     }
 
+    /**
+     * Elimina un grupo de la base de datos.
+     * @param groupID ID del grupo a eliminar.
+     * @throws SQLException Si ocurre un error al eliminar el grupo.
+     */
     override fun deleteGroup(groupID: Int) {
         try {
             groupDAO.deleteGroup(groupID)
@@ -40,6 +56,12 @@ class GroupService(private val console: Console, private val groupDAO: IGroupDAO
         }
     }
 
+    /**
+     * Obtiene la información de un grupo por su ID.
+     * @param groupID ID del grupo a obtener.
+     * @return La entidad del grupo o null si no se encuentra.
+     * @throws SQLException Si ocurre un error al obtener el grupo.
+     */
     override fun getGroupByID(groupID: Int): GroupEntity? {
         try {
             return groupDAO.getGroup(groupID)
@@ -49,6 +71,11 @@ class GroupService(private val console: Console, private val groupDAO: IGroupDAO
         return null
     }
 
+    /**
+     * Obtiene la información de todos los grupos en la base de datos.
+     * @return Lista de entidades de los grupos.
+     * @throws SQLException Si ocurre un error al obtener los grupos.
+     */
     override fun getAllGroups(): List<GroupEntity> {
         try {
             return groupDAO.getAllGroups().also {
@@ -62,8 +89,8 @@ class GroupService(private val console: Console, private val groupDAO: IGroupDAO
 
     /**
      * Actualiza el mejor CTF de un grupo.
-     *
      * @param groupId ID del grupo para actualizar su mejor CTF.
+     * @throws SQLException Si ocurre un error al actualizar el mejor CTF.
      */
     fun updateBestCTF(groupId: Int) {
         try {

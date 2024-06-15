@@ -12,6 +12,7 @@ import java.sql.SQLException
  */
 
 class ProcessCommandManager(private val console: Console) {
+
     /**
      * Procesa un archivo de comandos.
      *
@@ -64,7 +65,7 @@ class ProcessCommandManager(private val console: Console) {
                 } else {
                     try {
                         val groupId = args[1].toInt()
-                        val puntuacion = args[2].toInt()
+                        val puntuacion = args[3].toInt()
                         ctfService.createCTF(groupId, puntuacion)
                         groupService.updateBestCTF(groupId)
                         console.showInfo("Nuevo registro en CTF creado correctamente.")
