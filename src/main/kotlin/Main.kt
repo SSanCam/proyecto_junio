@@ -2,6 +2,7 @@ import db_connection.SQLDAOFactory
 import services.CTFService
 import services.GroupService
 import utilities.Console
+import utilities.ExportFileManagement
 import utilities.ProcessCommandManager
 import utilities.showHelp
 
@@ -12,6 +13,9 @@ fun main(args: Array<String>) {
     val groupService = GroupService(console, sqlDaoFactory.getGroupDAO())
     val ctfService = CTFService(console, sqlDaoFactory.getCTFDAO(), sqlDaoFactory.getGroupDAO())
     val processCommandManager = ProcessCommandManager(console)
+    val exportFileManagement = ExportFileManagement(console)
+
+    exportFileManagement.clearFile()
 
     if (args.isNotEmpty()) {
         if (args[0] == "-h" || args[0] == "--help") {
@@ -24,3 +28,4 @@ fun main(args: Array<String>) {
         showHelp(console)
     }
 }
+

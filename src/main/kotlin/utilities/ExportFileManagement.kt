@@ -9,7 +9,7 @@ import java.io.IOException
  * @property console Instancia de Console para mostrar mensajes.
  * @property filePath Ruta del archivo donde se exportarán los datos.
  */
-class ExportFileManagement(private val console: Console, val filePath: String) {
+class ExportFileManagement(private val console: Console, val filePath: String = "C:\\Users\\Sara S Camilleri\\Desktop\\repos\\pro-2324-trim3-SSanCam\\src\\main\\resources\\clasificacion_ctfs.txt") {
     private val file: File = File(filePath)
 
     init {
@@ -27,9 +27,6 @@ class ExportFileManagement(private val console: Console, val filePath: String) {
         }
     }
 
-    /**
-     * Limpia el contenido del archivo cuando se abre por primera vez el programa.
-     */
     fun clearFile() {
         try {
             file.writeText("")
@@ -39,10 +36,6 @@ class ExportFileManagement(private val console: Console, val filePath: String) {
         }
     }
 
-    /**
-     * Escribimos texto en el archivo.
-     * @param text El texto que se debe escribir.
-     */
     fun writeToFile(text: String) {
         try {
             file.appendText(text)

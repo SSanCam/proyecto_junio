@@ -7,10 +7,23 @@ import ui.CTFManagerApp
 import java.io.File
 import java.sql.SQLException
 
+/**
+ * Clase para manejar comandos del usuario.
+ *
+ * @property console Instancia de Console para mostrar mensajes.
+ */
 class ProcessCommandManager(private val console: Console) {
 
-    fun prosCommFile(filename: String, groupService: GroupService, ctfService: CTFService) {
+    /**
+     * Procesa los comandos desde un archivo.
+     *
+     * @param filename El nombre del archivo que contiene los comandos.
+     * @param groupService El servicio de grupo para acceder a los datos de los grupos.
+     * @param ctfService El servicio de CTF para acceder a los datos de CTF.
+     */
+    private fun prosCommFile(filename: String = "C:\\Users\\Sara S Camilleri\\Desktop\\repos\\pro-2324-trim3-SSanCam\\src\\main\\resources\\batchFile.txt", groupService: GroupService, ctfService: CTFService) {
         val batchFile = File(filename)
+        console.showInfo("Ruta absoluta del archivo: ${batchFile.absolutePath}")
         if (!batchFile.exists()) {
             console.showError("No se encuentra el archivo de comandos.")
             return
@@ -25,9 +38,17 @@ class ProcessCommandManager(private val console: Console) {
         }
     }
 
+    /**
+     * Procesa los comandos dados como argumentos.
+     *
+     * @param args Los argumentos de comandos.
+     * @param groupService El servicio de grupo para acceder a los datos de los grupos.
+     * @param ctfService El servicio de CTF para acceder a los datos de CTF.
+     */
     fun processCommand(args: Array<String>, groupService: GroupService, ctfService: CTFService) {
         when (args[0]) {
             "-g" -> {
+                // Crear un nuevo grupo
                 if (args.size != 2) {
                     console.showError("Número de parámetros erróneo.")
                 } else {
@@ -40,12 +61,14 @@ class ProcessCommandManager(private val console: Console) {
                 }
             }
             "-p" -> {
-                if (args.size != 3) {
-                    console.showError("Número de parámetros erróneo.")
+                // Añadir o actualizar una participación
+                if (args.size != 4) { // Cambiado a 4 argumentos esperados
+                    console.showError("Número de parámetros erróneo. Esperados: 4, Recibidos: ${args.size}")
                 } else {
                     try {
                         val groupId = args[1].toInt()
-                        val puntuacion = args[2].toInt()
+                        val ctfId = args[2].toInt()
+                        val puntuacion = args[3].toInt()
                         ctfService.createCTF(groupId, puntuacion)
                         groupService.updateBestCTF(groupId)
                         console.showInfo("Nuevo registro en CTF creado correctamente.")
@@ -55,6 +78,7 @@ class ProcessCommandManager(private val console: Console) {
                 }
             }
             "-t" -> {
+                // Eliminar un grupo
                 if (args.size != 2) {
                     console.showError("Número de parámetros erróneo.")
                 } else {
@@ -68,6 +92,7 @@ class ProcessCommandManager(private val console: Console) {
                 }
             }
             "-e" -> {
+                // Eliminar una participación
                 if (args.size != 3) {
                     console.showError("Número de parámetros erróneo.")
                 } else {
@@ -83,6 +108,7 @@ class ProcessCommandManager(private val console: Console) {
                 }
             }
             "-l" -> {
+                // Listar información de los grupos
                 try {
                     if (args.size == 2) {
                         val groupId = args[1].toIntOrNull()
@@ -117,6 +143,7 @@ class ProcessCommandManager(private val console: Console) {
                 }
             }
             "-c" -> {
+                // Listar participaciones en CTFs
                 try {
                     if (args.size == 1) {
                         val ctfs = ctfService.getAllCTFs()
@@ -137,13 +164,17 @@ class ProcessCommandManager(private val console: Console) {
                 }
             }
             "-f" -> {
-                if (args.size != 2) {
-                    console.showError("Número de parámetros erróneo.")
-                } else {
-                    prosCommFile(args[1], groupService, ctfService)
+                // Procesar comandos desde un archivo
+                try {
+                    val filename = if (args.size == 2) args[1] else "C:\\Users\\Sara S Camilleri\\Desktop\\repos\\pro-2324-trim3-SSanCam\\src\\main\\resources\\batchFile.txt"
+                    console.showInfo("Procesando archivo de comandos: $filename")
+                    prosCommFile(filename, groupService, ctfService)
+                } catch (e: Exception) {
+                    console.showError("No se encuentra el archivo: ${e.message}")
                 }
             }
             "-i" -> {
+                // Iniciar la interfaz gráfica
                 singleWindowApplication {
                     CTFManagerApp(groupService, ctfService)
                 }

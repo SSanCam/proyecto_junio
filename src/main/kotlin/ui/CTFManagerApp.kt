@@ -26,9 +26,6 @@ import utilities.Console
 import utilities.ExportFileManagement
 import java.sql.SQLException
 
-/**
- * Interfaz gráfica
- */
 @Composable
 fun CTFManagerApp(groupService: GroupService, ctfService: CTFService) {
     var inputText by remember { mutableStateOf(TextFieldValue(text = "")) }
@@ -43,7 +40,7 @@ fun CTFManagerApp(groupService: GroupService, ctfService: CTFService) {
             groupList.add("ID: ${group.groupid}, Desc: ${group.groupdesc}, Mejor CTF: ${group.bestpostctfid ?: "N/A"}")
         }
     }
-    //Imagen de background de la ventana.
+    // Imagen de background de la ventana.
     val backgroundImage: Painter = painterResource(resourcePath = "background.png")
 
     Box(
@@ -73,7 +70,7 @@ fun CTFManagerApp(groupService: GroupService, ctfService: CTFService) {
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                spacer(8)
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
                     onClick = {
@@ -96,12 +93,14 @@ fun CTFManagerApp(groupService: GroupService, ctfService: CTFService) {
                     Text("Mostrar")
                 }
 
-                spacer(8)
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
                     onClick = {
                         // Lógica para exportar clasificación
                         val exportPath = "src/main/resources/clasificacion_ctfs.txt"
+                        val exportManager = ExportFileManagement(console = Console(), filePath = exportPath)
+                        exportManager.clearFile()
                         exportCTFClassification(ctfService, groupService, exportPath)
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -109,7 +108,7 @@ fun CTFManagerApp(groupService: GroupService, ctfService: CTFService) {
                     Text("Exportar")
                 }
 
-                spacer(8)
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = displayInfo,
@@ -118,7 +117,7 @@ fun CTFManagerApp(groupService: GroupService, ctfService: CTFService) {
                 )
             }
 
-            spacer(16)
+            Spacer(modifier = Modifier.width(16.dp))
 
             Column(
                 modifier = Modifier
@@ -140,15 +139,6 @@ fun CTFManagerApp(groupService: GroupService, ctfService: CTFService) {
             }
         }
     }
-}
-
-/**
- * Función para agregar espacio.
- * @param height La altura del espacio en dp.
- */
-@Composable
-fun spacer(dp: Int) {
-    Spacer(modifier = Modifier.height(dp.dp))
 }
 
 /**

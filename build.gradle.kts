@@ -36,6 +36,9 @@ dependencies {
     testImplementation("io.kotest:kotest-property:5.4.2")
     // Dependencia para MockK
     testImplementation("io.mockk:mockk:1.13.11")
+    // Dependencias para JUnit 5
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
 }
 
 compose.desktop {
@@ -57,6 +60,10 @@ tasks.withType<KotlinCompile> {
 tasks.withType<JavaCompile> {
     sourceCompatibility = "17"
     targetCompatibility = "17"
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.register<Jar>("createJar") {

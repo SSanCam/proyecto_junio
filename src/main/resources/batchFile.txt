@@ -1,11 +1,23 @@
 # Crear grupos
 -g;1DAM-G1
 -g;1DAM-G2
+-g;1DAM-G3
+-g;1DAM-G4
 
 # Añadir/Actualizar participaciones
+# Grupo 1 con más de un CTF
 -p;1;1;100
 -p;1;2;90
+
+# Grupo 2 con más de un CTF
 -p;2;1;80
+-p;2;3;85
+
+# Grupo 3 con un CTF
+-p;3;1;75
+
+# Grupo 4 con un CTF
+-p;4;2;95
 
 # Listar información de un grupo específico
 -l;1
