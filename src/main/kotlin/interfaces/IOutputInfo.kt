@@ -5,4 +5,5 @@ interface IOutputInfo {
     fun readInput(request: Any): String
     fun showError(errorMessage: String)
     fun showConfirmation(message: String)
+    fun clearScr(lines: Int = 20)
 }

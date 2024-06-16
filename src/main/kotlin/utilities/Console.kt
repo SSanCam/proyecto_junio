@@ -29,4 +29,9 @@ class Console : IOutputInfo {
         showInfo(message)
     }
 
+    override fun clearScr(lines: Int) {
+        repeat(lines){
+            showInfo("")
+        }
+    }
 }

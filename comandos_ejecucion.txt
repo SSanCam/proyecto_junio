@@ -1,0 +1,41 @@
+# Navega al directorio del proyecto
+cd C:\Users\Sara S Camilleri\Desktop\repos\pro-2324-trim3-SSanCam
+
+# Limpia el proyecto
+gradlew.bat clean
+
+# Construye el proyecto y crea el archivo JAR
+gradlew.bat createJar
+
+# Navega al directorio donde se encuentra el archivo JAR
+cd build/libs
+
+# Ejecuta el archivo JAR con el comando deseado
+# Ejemplo: Mostrar la ayuda
+java -jar un9pe.jar -h
+
+# Ejemplo: Agregar un grupo (reemplaza "NombreDelGrupo" con el nombre real del grupo)
+java -jar un9pe.jar -g "NombreDelGrupo"
+
+# Ejemplo: Agregar una participación en un CTF
+# (reemplaza <ctfId>, <grupoId> y <puntuacion> con los valores reales)
+java -jar un9pe.jar -p <ctfId> <grupoId> <puntuacion>
+
+# Ejemplo: Eliminar un grupo (reemplaza <grupoId> con el ID real del grupo)
+java -jar un9pe.jar -t <grupoId>
+
+# Ejemplo: Eliminar una participación en un CTF
+# (reemplaza <ctfId> y <grupoId> con los valores reales)
+java -jar un9pe.jar -e <ctfId> <grupoId>
+
+# Ejemplo: Mostrar la información de un grupo (reemplaza <grupoId> con el ID real del grupo)
+java -jar un9pe.jar -l <grupoId>
+
+# Ejemplo: Mostrar la participación de los grupos en todos los CTF
+java -jar un9pe.jar -c
+
+# Ejemplo: Procesar un archivo de comandos por lotes (reemplaza <filepath> con la ruta real del archivo)
+java -jar un9pe.jar -f <filepath>
+
+# Ejemplo: Lanzar la interfaz gráfica
+java -jar un9pe.jar -i

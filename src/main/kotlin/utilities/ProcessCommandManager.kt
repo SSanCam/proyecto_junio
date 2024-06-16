@@ -1,26 +1,16 @@
 package utilities
 
+import androidx.compose.ui.window.singleWindowApplication
 import services.CTFService
 import services.GroupService
+import ui.CTFManagerApp
 import java.io.File
 import java.sql.SQLException
 
-/**
- * ProcessCommandManager se encarga de procesar los comandos recibidos desde la línea de comandos o desde un archivo.
- *
- * @property console Instancia de Console para mostrar mensajes.
- */
 class ProcessCommandManager(private val console: Console) {
-    /**
-     * Procesa un archivo de comandos.
-     *
-     * @param filename Nombre del archivo que contiene los comandos.
-     * @param groupService Servicio para manejar operaciones relacionadas con grupos.
-     * @param ctfService Servicio para manejar operaciones relacionadas con CTFs.
-     */
-    fun prosCommFile(filename: String, groupService: GroupService, ctfService: CTFService) {
 
-        val batchFile = File("\\resources\\batchFile.txt")
+    fun prosCommFile(filename: String, groupService: GroupService, ctfService: CTFService) {
+        val batchFile = File(filename)
         if (!batchFile.exists()) {
             console.showError("No se encuentra el archivo de comandos.")
             return
@@ -34,16 +24,9 @@ class ProcessCommandManager(private val console: Console) {
                 }
         }
     }
-    /**
-     * Procesa un comando individual.
-     *
-     * @param args Array de argumentos del comando.
-     * @param groupService Servicio para manejar operaciones relacionadas con grupos.
-     * @param ctfService Servicio para manejar operaciones relacionadas con CTFs.
-     */
-    private fun processCommand(args: Array<String>, groupService: GroupService, ctfService: CTFService) {
+
+    fun processCommand(args: Array<String>, groupService: GroupService, ctfService: CTFService) {
         when (args[0]) {
-            // Agrega nuevo registro a GRUPOS
             "-g" -> {
                 if (args.size != 2) {
                     console.showError("Número de parámetros erróneo.")
@@ -56,7 +39,6 @@ class ProcessCommandManager(private val console: Console) {
                     }
                 }
             }
-            // Agrega un nuevo registro a CTFS
             "-p" -> {
                 if (args.size != 3) {
                     console.showError("Número de parámetros erróneo.")
@@ -72,7 +54,6 @@ class ProcessCommandManager(private val console: Console) {
                     }
                 }
             }
-            // Elimina un registro de GRUPOS
             "-t" -> {
                 if (args.size != 2) {
                     console.showError("Número de parámetros erróneo.")
@@ -86,63 +67,88 @@ class ProcessCommandManager(private val console: Console) {
                     }
                 }
             }
-            // Elimina un registro de CTFS
             "-e" -> {
                 if (args.size != 3) {
                     console.showError("Número de parámetros erróneo.")
                 } else {
                     try {
                         val ctfId = args[1].toInt()
+                        val groupId = args[2].toInt()
                         ctfService.deleteCTFById(ctfId)
+                        groupService.updateBestCTF(groupId)
                         console.showInfo("Registro CTF eliminado correctamente.")
                     } catch (e: SQLException) {
                         console.showError("Error al eliminar el CTF: ${e.message}")
                     }
                 }
             }
-            // Muestra un registro de GRUPOS
             "-l" -> {
-                if (args.size != 2) {
-                    console.showError("Número de parámetros erróneo.")
-                } else {
-                    try {
-                        val groupId = args[1].toInt()
-                        val group = groupService.getGroupByID(groupId)
-                        if (group != null) {
-                            console.showInfo(group.toString())
+                try {
+                    if (args.size == 2) {
+                        val groupId = args[1].toIntOrNull()
+                        if (groupId != null) {
+                            val group = groupService.getGroupByID(groupId)
+                            if (group != null) {
+                                console.showInfo("Grupo: ${group.groupid}, Descripción: ${group.groupdesc}, Mejor CTF ID: ${group.bestpostctfid ?: "N/A"}")
+                                val participations = ctfService.getAllCTFs().filter { it.groupid == groupId }
+                                participations.forEach {
+                                    console.showInfo("CTF ID: ${it.ctfId}, Puntuación: ${it.score}")
+                                }
+                            } else {
+                                console.showError("Grupo no encontrado.")
+                            }
+                        } else {
+                            console.showError("ID del grupo no válido.")
                         }
-                    } catch (e: SQLException) {
-                        console.showError("Error al recibir los datos de GRUPOS.")
+                    } else if (args.size == 1) {
+                        val groups = groupService.getAllGroups()
+                        groups.forEach { group ->
+                            console.showInfo("Grupo: ${group.groupid}, Descripción: ${group.groupdesc}, Mejor CTF ID: ${group.bestpostctfid ?: "N/A"}")
+                            val participations = ctfService.getAllCTFs().filter { it.groupid == group.groupid }
+                            participations.forEach {
+                                console.showInfo("CTF ID: ${it.ctfId}, Puntuación: ${it.score}")
+                            }
+                        }
+                    } else {
+                        console.showError("Número de parámetros erróneo.")
                     }
+                } catch (e: SQLException) {
+                    console.showError("Error al obtener la información del grupo: ${e.message}")
                 }
             }
-            // Muestra todos los registros de CTFS
             "-c" -> {
-                if (args.size != 2) {
-                    console.showError("Número de parámetros erróneo.")
-                } else {
-                    try {
-                        val ctfs = ctfService.getAllCTFs().toString()
-                        console.showInfo(ctfs)
-                    } catch (e: SQLException) {
-                        console.showError("Error al obtener la información de CTFs.")
+                try {
+                    if (args.size == 1) {
+                        val ctfs = ctfService.getAllCTFs()
+                        if (ctfs.isNotEmpty()) {
+                            ctfs.sortedByDescending { it.score }.forEach { ctf ->
+                                val group = groupService.getGroupByID(ctf.groupid)
+                                val groupName = group?.groupdesc ?: "Desconocido"
+                                console.showInfo("CTF ID: ${ctf.ctfId}, Grupo: $groupName, Puntuación: ${ctf.score}")
+                            }
+                        } else {
+                            console.showInfo("No hay participaciones registradas en los CTFs.")
+                        }
+                    } else {
+                        console.showError("Número de parámetros erróneo.")
                     }
+                } catch (e: SQLException) {
+                    console.showError("Error al obtener la información de CTFs: ${e.message}")
                 }
             }
-            // Fichero con conjunto de comandos para procesamiento por lotes
             "-f" -> {
                 if (args.size != 2) {
                     console.showError("Número de parámetros erróneo.")
                 } else {
-                    val batchFile = File(args[1])
                     prosCommFile(args[1], groupService, ctfService)
                 }
             }
-            // Lanza la interfaz gráfica
             "-i" -> {
-                launchGUI(groupService, ctfService)
+                singleWindowApplication {
+                    CTFManagerApp(groupService, ctfService)
+                }
             }
-            else -> console.showError("Unknown command: ${args[0]}")
+            else -> console.showError("Comando desconocido: ${args[0]}")
         }
     }
 }

@@ -8,4 +8,5 @@ interface ICTFService {
     fun deleteCTFById(ctfId: Int)
     fun getCTFById(ctfId: Int): CTFEntity?
     fun getAllCTFs(): List<CTFEntity>
+    fun exportCTFClassification(groupService: GroupService, filename: String = "resources/clasificacion_ctfs.txt")
 }

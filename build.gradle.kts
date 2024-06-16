@@ -51,22 +51,26 @@ compose.desktop {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "19"
+    kotlinOptions.jvmTarget = "17"
 }
 
 tasks.withType<JavaCompile> {
-    sourceCompatibility = "19"
-    targetCompatibility = "19"
+    sourceCompatibility = "17"
+    targetCompatibility = "17"
 }
 
 tasks.register<Jar>("createJar") {
     dependsOn("build")
     archiveFileName.set("un9pe.jar")
-    from(sourceSets.main.get().output)
     manifest {
-        attributes["Main-Class"] = "MainKt"
+        attributes(
+            "Main-Class" to "MainKt"
+        )
     }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(sourceSets.main.get().output)
+    dependsOn(configurations.runtimeClasspath)
     from({
-        configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) }
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
     })
 }

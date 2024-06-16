@@ -13,8 +13,7 @@ abstract class DAOFactory {
     companion object {
         fun getFactory(dataSourceType: DataSourceType, dataSource: DataSource, console: Console): DAOFactory {
             return when (dataSourceType) {
-                DataSourceType.H2 -> db_connection.SQLDAOFactory(dataSource, console)
-                // Otros tipos de fuentes de datos pueden ser añadidos aquí.
+                DataSourceType.H2 -> SQLDAOFactory(dataSource, console)
 
                 DataSourceType.XML -> {
                     TODO()

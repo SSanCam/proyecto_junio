@@ -23,20 +23,17 @@ class CTFDAO(
 
     // Agrega un nuevo CTF a la base de datos
     override fun createCTF(ctf: CTFEntity) {
-        val sql = """INSERT INTO CTFS (grupoid, puntuacion) 
-            |VALUES (?, ?);""".trimMargin()
+        val sql = "INSERT INTO CTFS (GRUPOID, PUNTUACION) VALUES (?, ?);"
         try {
             transaction.openConnection()
-            transaction.commit()
-            dataSource.connection.use { conn ->
-                conn.prepareStatement(sql).use { stmt ->
-                    stmt.setInt(1, ctf.groupid)
-                    stmt.setInt(2, ctf.score)
-                    stmt.executeUpdate()
-                }
-                transaction.commit()
-                console.showInfo("CTF agregado correctamente.")
+            val conn = transaction.getConnection()
+            conn.prepareStatement(sql).use { stmt ->
+                stmt.setInt(1, ctf.groupid)
+                stmt.setInt(2, ctf.score)
+                stmt.executeUpdate()
             }
+            transaction.commit()
+            console.showInfo("CTF agregado correctamente.")
         } catch (e: SQLException) {
             transaction.rollback()
             console.showError("Error al agregar CTF: ${e.message}")
@@ -48,11 +45,7 @@ class CTFDAO(
 
     // Recupera los datos de un registro CTF por su ID
     override fun getCTFById(id: Int): CTFEntity? {
-        val sql = """
-            |SELECT * 
-            |FROM CTFS
-            |WHERE CTFid = ? ;
-        """.trimMargin()
+        val sql = "SELECT * FROM CTFS WHERE CTFID = ?;"
         try {
             transaction.openConnection()
             val conn = transaction.getConnection()
@@ -61,9 +54,9 @@ class CTFDAO(
                 val result = stmt.executeQuery()
                 if (result.next()) {
                     return CTFEntity(
-                        ctfId = result.getInt("CTFid"),
-                        groupid = result.getInt("grupoid"),
-                        score = result.getInt("puntuacion")
+                        ctfId = result.getInt("CTFID"),
+                        groupid = result.getInt("GRUPOID"),
+                        score = result.getInt("PUNTUACION")
                     )
                 }
             }
@@ -78,19 +71,14 @@ class CTFDAO(
 
     // Actualiza los detalles de un CTF existente
     override fun updateCTF(ctfId: Int, groupId: Int, newScore: Int) {
-        val sql = """
-            |UPDATE CTFS
-            |SET grupoid = ?, puntuacion =?
-            |WHERE CTFid = ?;
-        """.trimIndent()
+        val sql = "UPDATE CTFS SET GRUPOID = ?, PUNTUACION =? WHERE CTFID = ?;"
         try {
             transaction.openConnection()
-            transaction.commit()
             val conn = transaction.getConnection()
             conn.prepareStatement(sql).use { stmt ->
-                stmt.setInt(1, newScore)
-                stmt.setInt(2, ctfId)
-                stmt.setInt(3, groupId)
+                stmt.setInt(1, groupId)
+                stmt.setInt(2, newScore)
+                stmt.setInt(3, ctfId)
                 stmt.executeUpdate()
             }
             transaction.commit()
@@ -106,13 +94,9 @@ class CTFDAO(
 
     // Elimina un CTF de la base de datos usando su ID
     override fun deleteCTFById(id: Int) {
-        val sql = """
-             |DELETE FROM CTFS
-             |WHERE CTFid =? ;
-             """.trimIndent()
+        val sql = "DELETE FROM CTFS WHERE CTFID =?;"
         try {
             transaction.openConnection()
-            transaction.commit()
             val conn = transaction.getConnection()
             conn.prepareStatement(sql).use { stmt ->
                 stmt.setInt(1, id)
@@ -121,6 +105,7 @@ class CTFDAO(
             transaction.commit()
             console.showInfo("CTF eliminado correctamente.")
         } catch (e: SQLException) {
+            transaction.rollback()
             console.showError("Error al eliminar el CTF: ${e.message}")
             throw e
         } finally {
@@ -131,10 +116,7 @@ class CTFDAO(
     // Devuelve una lista con todos los registros de CTF existentes en la base de datos.
     override fun getAllCTFs(): List<CTFEntity> {
         val ctfs = mutableListOf<CTFEntity>()
-        val sql = """
-            |SELECT *
-            |FROM CTFS;
-        """.trimIndent()
+        val sql = "SELECT * FROM CTFS;"
         try {
             transaction.openConnection()
             val conn = transaction.getConnection()
@@ -143,9 +125,9 @@ class CTFDAO(
                 while (result.next()) {
                     ctfs.add(
                         CTFEntity(
-                            ctfId = result.getInt("CTFid"),
-                            groupid = result.getInt("grupoid"),
-                            score = result.getInt("puntuacion")
+                            ctfId = result.getInt("CTFID"),
+                            groupid = result.getInt("GRUPOID"),
+                            score = result.getInt("PUNTUACION")
                         )
                     )
                 }
